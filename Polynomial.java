@@ -3,246 +3,216 @@ import java.util.*;
 
 public class Polynomial {
 
+	double [] coeff;
+	int [] exp;
 
+	public Polynomial() {
+		coeff = new double [1];
+		exp = new int [1];
+	}
 
-double [] coeff;
+	public Polynomial(double [] coeff, int [] exp) {
+		this.coeff = coeff;
+		this.exp = exp;
+	}
 
+	public Polynomial(File file) {
 
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file));
 
-int [] exp;
+			String polynomial = reader.readLine();
 
+			polynomial = polynomial.replace("-", "+-");
 
+			if (polynomial.charAt(1) == '-') {
+				polynomial = polynomial.substring(1);
+			}
 
-public Polynomial() {
 
-coeff = new double [1];
+			String [] split_poly = polynomial.split("\\+");
 
-exp = new int [1];
+			Polynomial result = new Polynomial();
 
-}
+			for (String a: split_poly) {
+				if (!a.contains("x")) {
+					double [] temp_coeff = {Double.parseDouble(a)};
+					int [] temp_exp = {1};
+					Polynomial temp = new Polynomial(temp_coeff, temp_exp);
+					result = result.add(temp);
+				} else {
+					String [] split_expression = a.split("x");
+					double [] temp_coeff = {Double.parseDouble(split_expression[0])};
+					int [] temp_exp = {Integer.parseInt(split_expression[1])};
+					Polynomial temp = new Polynomial(temp_coeff, temp_exp);
+					result = result.add(temp);
+				}
+			}
 
+			double [] actual_coeff = new double [result.coeff.length - 1];
 
+			int [] actual_exp = new int [result.exp.length - 1];
 
-public Polynomial(double [] coeff, int [] exp) {
+			for (int l = 1; l < result.coeff.length; l++) {
+				actual_coeff[l - 1] = result.coeff[l];
+			}
 
-this.coeff = coeff;
+			for (int z = 1; z < result.exp.length; z++) {
+				actual_exp[z - 1] = result.exp[z];
+			}
 
-this.exp = exp;
+			coeff = actual_coeff;
+			exp = actual_exp;
 
-}
+			reader.close();
 
-public Polynomial(File file) {
-try {
-BufferedReader reader = new BufferedReader(new FileReader(file));
+		} catch (IOException e) {
+			System.out.println("Error");
+			e.printStackTrace();
+		}
+	}
 
-String polynomial = reader.readLine();
 
-polynomial = polynomial.replace("-", "+-");
+	Polynomial add(Polynomial p) {
 
-if (polynomial.charAt(1) == '-') {
-polynomial = polynomial.substring(1);
-}
+		if (((p == null) || (p.coeff.length != p.exp.length)) || (coeff.length != exp.length)) {
 
+			return null;
 
-String [] split_poly = polynomial.split("\\+");
+		}
 
-Polynomial result = new Polynomial();
+		int same = 0;
 
-for (String a: split_poly) {
+		for (int i = 0; i < exp.length; i++) {
+			for (int j = 0; j < p.exp.length; j++) {
+				if (p.exp[j] == exp[i]) {
+					same++;
+				}
+			}
+		}
 
-if (!a.contains("x")) {
-double [] temp_coeff = {Double.parseDouble(a)};
-int [] temp_exp = {1};
-Polynomial temp = new Polynomial(temp_coeff, temp_exp);
-result = result.add(temp);
-} else {
-String [] split_expression = a.split("x");
-double [] temp_coeff = {Double.parseDouble(split_expression[0])};
-int [] temp_exp = {Integer.parseInt(split_expression[1])};
-Polynomial temp = new Polynomial(temp_coeff, temp_exp);
-result = result.add(temp);
-}
-}
+		int length = exp.length + p.exp.length - same;
 
-double [] actual_coeff = new double [result.coeff.length - 1];
+		double [] new_coeff = new double [length];
 
-int [] actual_exp = new int [result.exp.length - 1];
+		int [] new_exp = new int [length];
 
-for (int l = 1; l < result.coeff.length; l++) {
-actual_coeff[l - 1] = result.coeff[l];
-}
+		int counter = 0;
 
-for (int z = 1; z < result.exp.length; z++) {
-actual_exp[z - 1] = result.exp[z];
-}
+		boolean found = false;
 
-coeff = actual_coeff;
-exp = actual_exp;
+		for (int j = 0; j < exp.length; j++) {
+			new_coeff[j] = coeff[j];
+			new_exp[j] = exp[j];
+		}
 
-reader.close();
+		for (int k = 0; k < p.exp.length; k++) {
 
-} catch (IOException e) {
-System.out.println("Error");
-e.printStackTrace();
-}
-}
+			for (int l = 0; l < exp.length; l++) {
+				if (p.exp[k] == new_exp[l]) {
+					new_coeff[l] += p.coeff[k];
+					found = true;
+					break;
+				}
+			}
 
+			if (!found) {
+				new_coeff[exp.length + counter] = p.coeff[k];
+				new_exp[exp.length + counter] = p.exp[k];
+				counter++;
+			}
 
-Polynomial add(Polynomial p) {
+			found = false;
+		}
 
-if (((p == null) || (p.coeff.length != p.exp.length)) || (coeff.length != exp.length)) {
+		Polynomial new_p = new Polynomial(new_coeff, new_exp);
 
-return null;
+		return new_p;
 
-}
+	}
 
-int same = 0;
 
-for (int i = 0; i < exp.length; i++) {
 
-for (int j = 0; j < p.exp.length; j++) {
+	double evaluate(double x) {
 
-if (p.exp[j] == exp[i]) {
+		double val = 0;
 
-same++;
+		for (int i = 0; i < coeff.length; i++) {
+			val += coeff[i]*exp[i];
+		}	
 
-}
+		return val;
 
-}
+	}
 
-}
+	boolean hasRoot(double x) {
+		return (evaluate(x) == 0);
+	}
 
-int length = exp.length + p.exp.length - same;
 
-double [] new_coeff = new double [length];
+	Polynomial multiply(Polynomial p) {
+		if (((p == null) || (p.coeff.length != p.exp.length)) || (coeff.length != exp.length)){
+			return null;
+		}
 
-int [] new_exp = new int [length];
+		Polynomial result = new Polynomial();
 
-int counter = 0;
+		Polynomial temp = new Polynomial();
 
-boolean found = false;
 
-for (int j = 0; j < exp.length; j++) {
-new_coeff[j] = coeff[j];
-new_exp[j] = exp[j];
+		for (int i = 0; i < coeff.length; i++) {
+			for (int k = 0; k < p.coeff.length; k++) {
+				temp.coeff[0] = coeff[i] * p.coeff[k];
+				temp.exp[0] = exp[i] + p.exp[k];
+				result = result.add(temp);
+			}
+		}
 
-}
+		double [] actual_coeff = new double [result.coeff.length - 1];
 
-for (int k = 0; k < p.exp.length; k++) {
-for (int l = 0; l < exp.length; l++) {
-if (p.exp[k] == new_exp[l]) {
-new_coeff[l] += p.coeff[k];
-found = true;
-break;
-}
-}
+		int [] actual_exp = new int [result.exp.length - 1];
 
-if (!found) {
-new_coeff[exp.length + counter] = p.coeff[k];
-new_exp[exp.length + counter] = p.exp[k];
-counter++;
-}
+		for (int l = 1; l < result.coeff.length; l++) {
+			actual_coeff[l - 1] = result.coeff[l];
+		}
 
-found = false;
-}
+		for (int z = 1; z < result.exp.length; z++) {
+			actual_exp[z - 1] = result.exp[z];
+		}
 
-Polynomial new_p = new Polynomial(new_coeff, new_exp);
+		Polynomial actual_result = new Polynomial(actual_coeff, actual_exp);
 
-return new_p;
+		return actual_result;
 
-}
+	}
 
 
 
-double evaluate(double x) {
+	void saveToFile(String fileName) {
 
-double val = 0;
+		try {
+			FileWriter writer = new FileWriter(fileName);
 
-for (int i = 0; i < coeff.length; i++) {
+			String result = "";
 
-val += coeff[i]*exp[i];
+			for (int i = 0; i < coeff.length; i++) {
+				if (exp[i] == 1) {
+					result = result + coeff[i];
+				} else if (coeff[i] > 0) {
+					result = result + "+" + coeff[i] + "x" + exp[i];
+				} else {
+					result = result + coeff[i] + "x" + exp[i];
+				}
+			}
 
-}
+			writer.write(result);
 
-return val;
+			writer.close();
 
-}
-
-
-
-boolean hasRoot(double x) {
-
-return (evaluate(x) == 0);
-
-}
-
-
-Polynomial multiply(Polynomial p) {
-
-if (((p == null) || (p.coeff.length != p.exp.length)) || (coeff.length != exp.length)){
-
-return null;
-
-}
-
-Polynomial result = new Polynomial();
-
-Polynomial temp = new Polynomial();
-
-
-for (int i = 0; i < coeff.length; i++) {
-for (int k = 0; k < p.coeff.length; k++) {
-temp.coeff[0] = coeff[i] * p.coeff[k];
-temp.exp[0] = exp[i] + p.exp[k];
-result = result.add(temp);
-}
-}
-
-double [] actual_coeff = new double [result.coeff.length - 1];
-
-int [] actual_exp = new int [result.exp.length - 1];
-
-for (int l = 1; l < result.coeff.length; l++) {
-actual_coeff[l - 1] = result.coeff[l];
-}
-
-for (int z = 1; z < result.exp.length; z++) {
-actual_exp[z - 1] = result.exp[z];
-}
-
-Polynomial actual_result = new Polynomial(actual_coeff, actual_exp);
-
-return actual_result;
-
-}
-
-
-
-void saveToFile(String fileName) {
-
-try {
-FileWriter writer = new FileWriter(fileName);
-
-String result = "";
-
-for (int i = 0; i < coeff.length; i++) {
-if (exp[i] == 1) {
-result = result + coeff[i];
-} else if (coeff[i] > 0) {
-result = result + "+" + coeff[i] + "x" + exp[i];
-} else {
-result = result + coeff[i] + "x" + exp[i];
-}
-}
-
-writer.write(result);
-
-writer.close();
-
-} catch (IOException e) {
-System.out.println("Error");
-e.printStackTrace();
-}
-}
+		} catch (IOException e) {
+			System.out.println("Error");
+			e.printStackTrace();
+		}
+	}
 
 }
