@@ -16,8 +16,6 @@ public class Driver {
 		} else {
 			System.out.println("1 is not a root of s");
 		}
-
-		//tester
 	}
 
 }
