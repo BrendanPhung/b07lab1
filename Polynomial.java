@@ -3,6 +3,8 @@ import java.util.*;
 
 public class Polynomial {
 
+	//tester
+
 
 double [] coeff;
 
