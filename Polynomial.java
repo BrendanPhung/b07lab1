@@ -3,6 +3,23 @@ import java.util.*;
 
 public class Polynomial {
 
+
+double [] coeff;
+
+
+
+int [] exp;
+
+
+
+public Polynomial() {
+
+coeff = new double [1];
+
+exp = new int [1];
+
+}
+
 	double [] coeff;
 	int [] exp;
 
@@ -11,6 +28,7 @@ public class Polynomial {
 		exp = new int [1];
 
 	}
+
 
 
 
